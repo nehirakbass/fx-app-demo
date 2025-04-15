@@ -18,6 +18,8 @@ import com.fxapp.currencyconversion.util.FileParser;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -160,7 +162,8 @@ public class ExchangeServiceImpl implements ExchangeService {
           sourceCurrency,
           targetCurrency,
           cachedRate);
-      return cachedRate;
+
+      return BigDecimal.valueOf(cachedRate).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
     return exchangeRateCacheService.getRate(sourceCurrency, targetCurrency);

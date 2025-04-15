@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fxapp.currencyconversion.constants.ResultCode;
 import com.fxapp.currencyconversion.exception.FxException;
 import com.fxapp.currencyconversion.service.client.ExchangeRateClient;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -45,6 +47,6 @@ public class ExchangeRateClientImpl implements ExchangeRateClient {
       throw new FxException(ResultCode.INVALID_CURRENCY);
     }
 
-    return quote.asDouble();
+    return BigDecimal.valueOf(quote.asDouble()).setScale(2, RoundingMode.HALF_UP).doubleValue();
   }
 }
