@@ -16,7 +16,10 @@ public enum ResultCode {
       HttpStatus.BAD_REQUEST),
   FILE_PARSING_FAILED(
       "06", "Parsing the bulk request file failed", HttpStatus.INTERNAL_SERVER_ERROR),
-  FILE_FORMAT_NOT_SUPPORTED("07", "Given file format is not supported", HttpStatus.BAD_REQUEST);
+  FILE_FORMAT_NOT_SUPPORTED("07", "Given file format is not supported", HttpStatus.BAD_REQUEST),
+
+  NULL_USER_NAME("08", "Username is null", HttpStatus.BAD_REQUEST),
+  USER_NOT_FOUND("09", "User not found", HttpStatus.NOT_FOUND);
 
   private final String code;
   private final String message;

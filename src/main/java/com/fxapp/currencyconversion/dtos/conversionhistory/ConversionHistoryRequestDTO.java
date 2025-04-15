@@ -12,4 +12,5 @@ import lombok.*;
 public class ConversionHistoryRequestDTO {
   private UUID transactionId;
   private LocalDateTime transactionDate;
+  private String username;
 }

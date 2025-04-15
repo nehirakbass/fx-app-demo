@@ -1,9 +1,6 @@
 package com.fxapp.currencyconversion.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -28,4 +25,7 @@ public class Conversion {
   private double convertedAmount;
   private double rate;
   private LocalDateTime timestamp;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  private User user;
 }
