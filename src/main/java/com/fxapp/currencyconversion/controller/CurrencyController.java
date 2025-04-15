@@ -13,8 +13,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.*;
 import java.io.IOException;
 import java.util.List;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +50,9 @@ public class CurrencyController {
           "Retrieves a paged list of conversions with given parameters(at least one must be provided)")
   public ResponseEntity<PageResponse<ConversionHistoryResponseDTO>> conversionHistory(
       @RequestBody ConversionHistoryRequestDTO request,
-      @PageableDefault(size = 10, page = 0) Pageable pageable) {
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    Pageable pageable = PageRequest.of(page, size);
     return ResponseEntity.ok(exchangeService.getConversionHistory(request, pageable));
   }
 

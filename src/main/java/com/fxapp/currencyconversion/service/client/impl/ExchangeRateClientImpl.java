@@ -13,7 +13,7 @@ public class ExchangeRateClientImpl implements ExchangeRateClient {
 
   private final RestTemplate restTemplate = new RestTemplate();
 
-  @Value("${api-key}")
+  @Value("${fx.api-key}")
   private String apiKey;
 
   @Override

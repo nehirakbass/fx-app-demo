@@ -11,8 +11,8 @@ import com.fxapp.currencyconversion.dtos.exchangerate.ExchangeRateResponseDTO;
 import com.fxapp.currencyconversion.entities.Conversion;
 import com.fxapp.currencyconversion.exception.FxException;
 import com.fxapp.currencyconversion.repos.ConversionHistoryRepository;
+import com.fxapp.currencyconversion.service.ExchangeRateCacheService;
 import com.fxapp.currencyconversion.service.ExchangeService;
-import com.fxapp.currencyconversion.service.client.ExchangeRateClient;
 import com.fxapp.currencyconversion.service.mapper.ConversionMapper;
 import com.fxapp.currencyconversion.util.FileParser;
 import io.micrometer.common.util.StringUtils;
@@ -24,7 +24,6 @@ import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,15 +32,15 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @Slf4j
 public class ExchangeServiceImpl implements ExchangeService {
-  private final ExchangeRateClient exchangeRateClient;
+  private final ExchangeRateCacheService exchangeRateCacheService;
   private final ConversionHistoryRepository conversionHistoryRepository;
   private final CacheManager cacheManager;
 
   public ExchangeServiceImpl(
-      ExchangeRateClient exchangeRateClient,
+      ExchangeRateCacheService exchangeRateCacheService,
       ConversionHistoryRepository conversionHistoryRepository,
       CacheManager cacheManager) {
-    this.exchangeRateClient = exchangeRateClient;
+    this.exchangeRateCacheService = exchangeRateCacheService;
     this.conversionHistoryRepository = conversionHistoryRepository;
     this.cacheManager = cacheManager;
   }
@@ -150,13 +149,6 @@ public class ExchangeServiceImpl implements ExchangeService {
     }
   }
 
-  @Cacheable(value = "exchangeRates", key = "#sourceCurrency + '_' + #targetCurrency")
-  private double fetchRateFromApi(String sourceCurrency, String targetCurrency) {
-    log.info(
-        "Not found in cache – Fetching rate from API: {} -> {}", sourceCurrency, targetCurrency);
-    return exchangeRateClient.getRate(sourceCurrency, targetCurrency);
-  }
-
   public double getRate(String sourceCurrency, String targetCurrency) {
     String cacheKey = sourceCurrency + "_" + targetCurrency;
     Cache cache = cacheManager.getCache("exchangeRates");
@@ -171,6 +163,6 @@ public class ExchangeServiceImpl implements ExchangeService {
       return cachedRate;
     }
 
-    return fetchRateFromApi(sourceCurrency, targetCurrency);
+    return exchangeRateCacheService.getRate(sourceCurrency, targetCurrency);
   }
 }
