@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -129,7 +129,10 @@ public class ExchangeServiceImpl implements ExchangeService {
   public List<CurrencyChangeResponseDTO> uploadFile(MultipartFile file) {
     try {
       List<CurrencyChangeRequestDTO> requestDTOList;
-      String filename = Objects.requireNonNull(file.getOriginalFilename()).toLowerCase();
+      String filename =
+          Optional.ofNullable(file.getOriginalFilename())
+              .orElseThrow(() -> new FxException(ResultCode.FILE_FORMAT_NOT_SUPPORTED))
+              .toLowerCase();
       if (filename.endsWith(".xlsx")) {
         requestDTOList = FileParser.parseBulkCurrencyChangeRequestXlsx(file);
       } else if (filename.endsWith(".csv")) {
