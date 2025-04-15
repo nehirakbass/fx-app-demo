@@ -17,7 +17,10 @@ public enum ResultCode {
   AT_LEAST_ONE_FILTER_REQUIRED(
       "08",
       "At least one filter (transactionId or transactionDate) must be provided",
-      HttpStatus.BAD_REQUEST);
+      HttpStatus.BAD_REQUEST),
+  FILE_PARSING_FAILED(
+      "09", "Parsing the bulk request file failed", HttpStatus.INTERNAL_SERVER_ERROR),
+  FILE_FORMAT_NOT_SUPPORTED("10", "Given file format is not supported", HttpStatus.BAD_REQUEST);
 
   private final String code;
   private final String message;

@@ -8,9 +8,14 @@ import com.fxapp.currencyconversion.dtos.currencychange.CurrencyChangeResponseDT
 import com.fxapp.currencyconversion.dtos.exchangerate.ExchangeRateRequestDTO;
 import com.fxapp.currencyconversion.dtos.exchangerate.ExchangeRateResponseDTO;
 import com.fxapp.currencyconversion.service.ExchangeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.*;
+import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,28 +30,43 @@ public class CurrencyController {
     this.exchangeService = exchangeService;
   }
 
-  @GetMapping("/check-rate")
+  @PostMapping("/check-rate")
+  @Operation(summary = "Retrieves current rate for the given source and target currencies")
   public ResponseEntity<ExchangeRateResponseDTO> exchangeRate(
-      @RequestParam ExchangeRateRequestDTO request) {
+      @RequestBody ExchangeRateRequestDTO request) {
     return ResponseEntity.ok(exchangeService.checkRate(request));
   }
 
   @PostMapping("/currency-change")
+  @Operation(summary = "Converts given amount in source currency to the target currency")
   public ResponseEntity<CurrencyChangeResponseDTO> currencyChange(
       @RequestBody CurrencyChangeRequestDTO request) {
     return ResponseEntity.ok(exchangeService.currencyChange(request));
   }
 
-  @GetMapping("/conversion-history")
+  @PostMapping("/conversion-history")
+  @Operation(
+      summary =
+          "Retrieves a paged list of conversions with given parameters(at least one must be provided)")
   public ResponseEntity<PageResponse<ConversionHistoryResponseDTO>> conversionHistory(
-      @RequestParam ConversionHistoryRequestDTO request,
+      @RequestBody ConversionHistoryRequestDTO request,
       @PageableDefault(size = 10, page = 0) Pageable pageable) {
     return ResponseEntity.ok(exchangeService.getConversionHistory(request, pageable));
   }
 
-  @PostMapping("/bulk-convert")
+  @PostMapping(value = "/bulk-convert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Operation(summary = "Upload a file for bulk currency conversion")
   public ResponseEntity<List<CurrencyChangeResponseDTO>> uploadFile(
-      @RequestParam("file") MultipartFile file) {
+      @Parameter(
+              description = "CSV or XLSX file",
+              required = true,
+              content =
+                  @Content(
+                      mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                      schema = @Schema(type = "string", format = "binary")))
+          @RequestParam("file")
+          MultipartFile file)
+      throws IOException {
     return ResponseEntity.ok(exchangeService.uploadFile(file));
   }
 }

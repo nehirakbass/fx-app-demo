@@ -1,14 +1,12 @@
 package com.fxapp.currencyconversion.dtos.currencychange;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class CurrencyChangeRequestDTO {
   private String sourceCurrency;
   private String targetCurrency;

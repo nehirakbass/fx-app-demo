@@ -14,11 +14,17 @@ import com.fxapp.currencyconversion.repos.ConversionHistoryRepository;
 import com.fxapp.currencyconversion.service.ExchangeService;
 import com.fxapp.currencyconversion.service.client.ExchangeRateClient;
 import com.fxapp.currencyconversion.service.mapper.ConversionMapper;
+import com.fxapp.currencyconversion.util.FileParser;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,12 +35,15 @@ import org.springframework.web.multipart.MultipartFile;
 public class ExchangeServiceImpl implements ExchangeService {
   private final ExchangeRateClient exchangeRateClient;
   private final ConversionHistoryRepository conversionHistoryRepository;
+  private final CacheManager cacheManager;
 
   public ExchangeServiceImpl(
       ExchangeRateClient exchangeRateClient,
-      ConversionHistoryRepository conversionHistoryRepository) {
+      ConversionHistoryRepository conversionHistoryRepository,
+      CacheManager cacheManager) {
     this.exchangeRateClient = exchangeRateClient;
     this.conversionHistoryRepository = conversionHistoryRepository;
+    this.cacheManager = cacheManager;
   }
 
   @Override
@@ -117,7 +126,22 @@ public class ExchangeServiceImpl implements ExchangeService {
 
   @Override
   public List<CurrencyChangeResponseDTO> uploadFile(MultipartFile file) {
-    return List.of();
+    try {
+      List<CurrencyChangeRequestDTO> requestDTOList;
+      String filename = Objects.requireNonNull(file.getOriginalFilename()).toLowerCase();
+      if (filename.endsWith(".xlsx")) {
+        requestDTOList = FileParser.parseBulkCurrencyChangeRequestXlsx(file);
+      } else if (filename.endsWith(".csv")) {
+        requestDTOList = FileParser.parseBulkCurrencyChangeRequestCsv(file);
+      } else {
+        throw new FxException(ResultCode.FILE_FORMAT_NOT_SUPPORTED);
+      }
+      log.info("Received bulk conversion request {} ", requestDTOList.size());
+      return requestDTOList.stream().map(this::currencyChange).toList();
+    } catch (IOException e) {
+      log.error("Failed to parse file: {}", e.getMessage());
+      throw new FxException(ResultCode.FILE_PARSING_FAILED);
+    }
   }
 
   private static void checkCurrencyCodes(String sourceCurrency, String targetCurrency) {
@@ -126,9 +150,27 @@ public class ExchangeServiceImpl implements ExchangeService {
     }
   }
 
-  private double getRate(String sourceCurrency, String targetCurrency) {
-    double rate = exchangeRateClient.getRate(sourceCurrency, targetCurrency);
-    log.info("Converting: {} to: {} current rate is: {}", sourceCurrency, targetCurrency, rate);
-    return rate;
+  @Cacheable(value = "exchangeRates", key = "#sourceCurrency + '_' + #targetCurrency")
+  private double fetchRateFromApi(String sourceCurrency, String targetCurrency) {
+    log.info(
+        "Not found in cache – Fetching rate from API: {} -> {}", sourceCurrency, targetCurrency);
+    return exchangeRateClient.getRate(sourceCurrency, targetCurrency);
+  }
+
+  public double getRate(String sourceCurrency, String targetCurrency) {
+    String cacheKey = sourceCurrency + "_" + targetCurrency;
+    Cache cache = cacheManager.getCache("exchangeRates");
+    Double cachedRate = cache != null ? cache.get(cacheKey, Double.class) : null;
+
+    if (cachedRate != null) {
+      log.info(
+          "Found in cache – Returning cached rate for: {} -> {} = {}",
+          sourceCurrency,
+          targetCurrency,
+          cachedRate);
+      return cachedRate;
+    }
+
+    return fetchRateFromApi(sourceCurrency, targetCurrency);
   }
 }

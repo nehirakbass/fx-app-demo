@@ -7,6 +7,7 @@ import com.fxapp.currencyconversion.dtos.currencychange.CurrencyChangeRequestDTO
 import com.fxapp.currencyconversion.dtos.currencychange.CurrencyChangeResponseDTO;
 import com.fxapp.currencyconversion.dtos.exchangerate.ExchangeRateRequestDTO;
 import com.fxapp.currencyconversion.dtos.exchangerate.ExchangeRateResponseDTO;
+import java.io.IOException;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,5 +20,5 @@ public interface ExchangeService {
   PageResponse<ConversionHistoryResponseDTO> getConversionHistory(
       ConversionHistoryRequestDTO request, Pageable pageable);
 
-  List<CurrencyChangeResponseDTO> uploadFile(MultipartFile file);
+  List<CurrencyChangeResponseDTO> uploadFile(MultipartFile file) throws IOException;
 }
