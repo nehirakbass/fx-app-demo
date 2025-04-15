@@ -49,6 +49,15 @@ This will start:
 
 Your .env file will be automatically picked up by Docker Compose.
 
+## Important Note
+```text
+By default, a demo API key for CurrencyLayer is already implemented to keep the application self-contained and functional out of the box.
+
+If you'd like to use your own API key, simply create a `.env` file like the example below.
+
+You can also safely omit REDIS_HOST and REDIS_PORT unless you're running Redis on a non-default host/port.
+```
+
 Example .env
 ```bash
 API_KEY=your_currencylayer_api_key
