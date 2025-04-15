@@ -17,6 +17,7 @@ A Simple API for real-time currency conversion.
    93% Method Coverage
    86% Line Coverage
 - **Spotless Integration** — Enforces strict code formatting on build
+- **User implementation** 
 
 
 ## How to Run
@@ -86,7 +87,8 @@ Convert currency and save the conversion history
 {
   "sourceCurrency": "USD",
   "targetCurrency": "EUR",
-  "amount": 100
+  "amount": 100,
+  "username" : "john-doe"
 }
 ```
 
@@ -104,7 +106,9 @@ Fetch conversion history (at least one filter must be provided)
 ### Request
 ```json
 {
-  "transactionDate": "2025-04-15T00:00:00"
+  "transactionId": "b3c8e763-23f1-4c64-9eaa-4f8b79ee9127",
+  "transactionDate": "2025-04-15T00:00:00",
+  "username": "john-doe"
 }
 ```
 
@@ -142,12 +146,12 @@ File Format
 Headers must be:
 
 ```
-SOURCE_CURRENCY,TARGET_CURRENCY,AMOUNT
+SOURCE_CURRENCY,TARGET_CURRENCY,AMOUNT,USERNAME
 ```
 
 Example .csv
 ```
-SOURCE_CURRENCY,TARGET_CURRENCY,AMOUNT
+SOURCE_CURRENCY,TARGET_CURRENCY,AMOUNT,USERNAME
 USD,TRY,100
 EUR,USD,50
 ```
@@ -166,6 +170,40 @@ EUR,USD,50
 ]
 ```
 
-# Supported Currencies
+# POST api/user/create-user
+Creates new user
 
-Visit -> https://currencylayer.com/currencies
+### Request
+```json
+{
+  "username": "john-doe"
+}
+```
+
+### Response
+```json
+{
+"userId": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
+
+# GET api/user/get-all-users
+Retrieves all the users
+
+### Response
+```json
+[
+    {
+    "userId": "c412ee97-893a-4eac-ac26-ac0520695da8",
+    "userName": "jane-doe"
+    },
+    {
+    "userId": "01e22736-9148-4c47-9edf-1859e2c398f7",
+    "userName": "john-doe"
+    },
+    {
+    "userId": "d1668581-a008-48b0-af41-0128cadbc13f",
+    "userName": "doe"
+    }
+]
+```

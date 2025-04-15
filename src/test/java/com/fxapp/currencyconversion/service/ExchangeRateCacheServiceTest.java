@@ -4,21 +4,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import com.fxapp.currencyconversion.service.client.ExchangeRateClient;
+import com.fxapp.currencyconversion.service.impl.ExchangeRateCacheServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @ActiveProfiles("test")
 @SpringBootTest
 @EnableCaching
+@Import(ExchangeRateCacheServiceTest.TestConfig.class)
 class ExchangeRateCacheServiceTest {
 
-  @MockitoBean private ExchangeRateClient exchangeRateClient;
-
   @Autowired private ExchangeRateCacheService cacheService;
+
+  @Autowired private ExchangeRateClient exchangeRateClient;
 
   @Test
   void testCaching_worksCorrectly() {
@@ -27,12 +32,28 @@ class ExchangeRateCacheServiceTest {
 
     when(exchangeRateClient.getRate(source, target)).thenReturn(38.0).thenReturn(999.0);
 
-    double first = cacheService.getRate(source, target);
-    double second = cacheService.getRate(source, target);
+    double firstCall = cacheService.getRate(source, target);
+    double secondCall = cacheService.getRate(source, target);
 
-    assertEquals(38.0, first);
-    assertEquals(38.0, second);
+    assertEquals(38.0, firstCall);
+    assertEquals(38.0, secondCall);
 
     verify(exchangeRateClient, times(1)).getRate(source, target);
+  }
+
+  @TestConfiguration
+  static class TestConfig {
+
+    @Bean
+    @Primary
+    public ExchangeRateClient exchangeRateClient() {
+      return mock(ExchangeRateClient.class);
+    }
+
+    @Bean
+    @Primary
+    public ExchangeRateCacheService cacheService(ExchangeRateClient exchangeRateClient) {
+      return new ExchangeRateCacheServiceImpl(exchangeRateClient);
+    }
   }
 }

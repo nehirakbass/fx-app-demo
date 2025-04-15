@@ -11,4 +11,5 @@ public class CurrencyChangeRequestDTO {
   private String sourceCurrency;
   private String targetCurrency;
   private Double amount;
+  private String username;
 }

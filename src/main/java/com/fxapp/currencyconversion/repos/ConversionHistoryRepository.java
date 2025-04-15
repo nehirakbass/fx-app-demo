@@ -6,10 +6,12 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ConversionHistoryRepository extends JpaRepository<Conversion, UUID> {
+public interface ConversionHistoryRepository
+    extends JpaRepository<Conversion, UUID>, JpaSpecificationExecutor<Conversion> {
 
   Page<Conversion> findByTransactionId(UUID transactionId, Pageable pageable);
 

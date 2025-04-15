@@ -6,15 +6,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
 public class FileParser {
   private static final List<String> EXPECTED_HEADERS =
-      List.of("SOURCE_CURRENCY", "TARGET_CURRENCY", "AMOUNT");
+      List.of("SOURCE_CURRENCY", "TARGET_CURRENCY", "AMOUNT", "USERNAME");
 
   public static List<CurrencyChangeRequestDTO> parseBulkCurrencyChangeRequestCsv(MultipartFile file)
       throws IOException {
@@ -37,6 +35,7 @@ public class FileParser {
                   .sourceCurrency(parts[0].trim().toUpperCase())
                   .targetCurrency(parts[1].trim().toUpperCase())
                   .amount(Double.parseDouble(parts[2].trim()))
+                  .username(parts[3].trim())
                   .build();
 
           requests.add(dto);
@@ -68,12 +67,14 @@ public class FileParser {
           String source = row.getCell(0).getStringCellValue().trim().toUpperCase();
           String target = row.getCell(1).getStringCellValue().trim().toUpperCase();
           double amount = row.getCell(2).getNumericCellValue();
+          String username = row.getCell(3).getStringCellValue().trim().toUpperCase();
 
           CurrencyChangeRequestDTO dto =
               CurrencyChangeRequestDTO.builder()
                   .sourceCurrency(source)
                   .targetCurrency(target)
                   .amount(amount)
+                  .username(username)
                   .build();
 
           list.add(dto);
@@ -93,21 +94,26 @@ public class FileParser {
 
     String[] headers = headerLine.trim().split(",");
 
-    if (headers.length != 3
-        || !headers[0].trim().equalsIgnoreCase(EXPECTED_HEADERS.get(0))
-        || !headers[1].trim().equalsIgnoreCase(EXPECTED_HEADERS.get(1))
-        || !headers[2].trim().equalsIgnoreCase(EXPECTED_HEADERS.get(2))) {
-      throw new IllegalArgumentException(
-          "Invalid header. Expected: " + String.join(", ", EXPECTED_HEADERS));
+    for (int i = 0; i < EXPECTED_HEADERS.size(); i++) {
+      if (!headers[i].trim().equalsIgnoreCase(EXPECTED_HEADERS.get(i))) {
+        throw new IllegalArgumentException(
+            "Invalid header. Expected: " + String.join(", ", EXPECTED_HEADERS));
+      }
     }
   }
 
   private static void validateExcelHeader(Row headerRow) {
-    if (!"SOURCE_CURRENCY".equalsIgnoreCase(headerRow.getCell(0).getStringCellValue().trim())
-        || !"TARGET_CURRENCY".equalsIgnoreCase(headerRow.getCell(1).getStringCellValue().trim())
-        || !"AMOUNT".equalsIgnoreCase(headerRow.getCell(2).getStringCellValue().trim())) {
-      throw new IllegalArgumentException(
-          "Invalid XLSX header. Expected: SOURCE_CURRENCY, TARGET_CURRENCY, AMOUNT");
+    for (int i = 0; i < EXPECTED_HEADERS.size(); i++) {
+      Cell cell = headerRow.getCell(i);
+      String actual =
+          (cell != null && cell.getCellType() == CellType.STRING)
+              ? cell.getStringCellValue().trim()
+              : "";
+
+      if (!EXPECTED_HEADERS.get(i).equalsIgnoreCase(actual)) {
+        throw new IllegalArgumentException(
+            "Invalid XLSX header. Expected: " + String.join(", ", EXPECTED_HEADERS));
+      }
     }
   }
 }
