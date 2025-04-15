@@ -109,7 +109,7 @@ Fetch conversion history (at least one filter must be provided)
 ```
 
 Query Params
-```json
+```
 ?page=0&size=10
 ```
 
@@ -141,12 +141,12 @@ Upload a file (.csv or .xlsx) for bulk conversion
 File Format
 Headers must be:
 
-```json
+```
 SOURCE_CURRENCY,TARGET_CURRENCY,AMOUNT
 ```
 
 Example .csv
-```json
+```
 SOURCE_CURRENCY,TARGET_CURRENCY,AMOUNT
 USD,TRY,100
 EUR,USD,50
