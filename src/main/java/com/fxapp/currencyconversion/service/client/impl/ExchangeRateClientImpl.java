@@ -11,10 +11,14 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class ExchangeRateClientImpl implements ExchangeRateClient {
 
-  private final RestTemplate restTemplate = new RestTemplate();
+  private final RestTemplate restTemplate;
 
   @Value("${fx.api-key}")
   private String apiKey;
+
+  public ExchangeRateClientImpl(RestTemplate restTemplate) {
+    this.restTemplate = restTemplate;
+  }
 
   @Override
   public double getRate(String srcCurr, String targetCurr) {
