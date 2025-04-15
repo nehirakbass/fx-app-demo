@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 public class FileParser {
   private static final List<String> EXPECTED_HEADERS =
       List.of("SOURCE_CURRENCY", "TARGET_CURRENCY", "AMOUNT", "USERNAME");
@@ -40,7 +42,7 @@ public class FileParser {
 
           requests.add(dto);
         } catch (Exception e) {
-          System.err.println("Skipping invalid line: " + line + " - " + e.getMessage());
+          log.warn("Skipping invalid line: " + line + " - " + e.getMessage());
         }
       }
     }
@@ -79,7 +81,7 @@ public class FileParser {
 
           list.add(dto);
         } catch (Exception e) {
-          System.err.println("Skipping row: " + row.getRowNum() + " -> " + e.getMessage());
+          log.warn("Skipping row: " + row.getRowNum() + " -> " + e.getMessage());
         }
       }
     }

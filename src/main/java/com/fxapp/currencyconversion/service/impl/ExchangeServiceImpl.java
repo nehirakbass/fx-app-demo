@@ -133,7 +133,10 @@ public class ExchangeServiceImpl implements ExchangeService {
   public List<CurrencyChangeResponseDTO> uploadFile(final MultipartFile file) {
     try {
       List<CurrencyChangeRequestDTO> requestDTOList;
-      String filename = Objects.requireNonNull(file.getOriginalFilename()).toLowerCase();
+      String filename =
+          Optional.ofNullable(file.getOriginalFilename())
+              .orElseThrow(() -> new FxException(ResultCode.FILE_FORMAT_NOT_SUPPORTED))
+              .toLowerCase();
       if (filename.endsWith(".xlsx")) {
         requestDTOList = FileParser.parseBulkCurrencyChangeRequestXlsx(file);
       } else if (filename.endsWith(".csv")) {

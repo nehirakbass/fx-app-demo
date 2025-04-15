@@ -22,18 +22,14 @@ A Simple API for real-time currency conversion.
 
 ## How to Run
 
-### Run Locally
-
 1. Make sure you have Java 17+ and Maven installed.
 2. Set your CurrencyLayer API key in `.env` or as an environment variable:
     API_KEY=your_currencylayer_api_key
-3. Then run the app:
+3. Then create the jar:
+
 ```bash
 mvn clean install
-mvn spring-boot:run
 ```
-
-Visit: http://localhost:8080/swagger-ui/index.html
 
 ### Run with Docker
 Make sure Docker is installed, then:
@@ -43,12 +39,22 @@ docker-compose up --build
 ```
 This will start:
 
-
 - Application on http://localhost:8080
 
 - Redis container for caching
 
+Visit: http://localhost:8080/swagger-ui/index.html
+
 Your .env file will be automatically picked up by Docker Compose.
+
+## Important Note
+```text
+By default, a demo API key for CurrencyLayer is already implemented to keep the application self-contained and functional out of the box.
+
+If you'd like to use your own API key, simply create a `.env` file like the example below.
+
+You can also safely omit REDIS_HOST and REDIS_PORT unless you're running Redis on a non-default host/port.
+```
 
 Example .env
 ```bash
